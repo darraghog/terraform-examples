@@ -13,18 +13,15 @@ variable "server_port" {
 }
 
 resource "aws_launch_configuration" "example" {
-  ami           = "ami-40d28157"
+  image_id = "ami-40d28157"
   instance_type = "t2.micro"
-  vpc_security_group_ids = ["${aws_security_group.instance.id}"]
+  security_groups = ["${aws_security_group.instance.id}"]
   user_data = <<-EOF
 	#!/bin/bash
 	echo "Hello, World" > index.html
 	nohup busybox httpd -f -p "${var.server_port}" &
 	EOF
 
-  tags {
-	Name = "terraform-example"
-  } 
   lifecycle = {
 	create_before_destroy = true
   }
@@ -99,3 +96,8 @@ resource "aws_elb" "example" {
     target              = "HTTP:${var.server_port}/"
   }
 }
+
+output "elb_dns_name" {
+	value = "${aws_elb.example.dns_name}"
+}
+
